@@ -13,8 +13,8 @@ RUN npm install
 # Copy the rest of the project
 COPY . .
 
-# Install Playwright browsers (optional if not already installed)
+# Install Playwright browsers
 RUN npx playwright install
 
-# Default command to run tests
-CMD ["npx", "playwright", "test", "--reporter=line,allure-playwright"]
+# Default command to run tests and write results to allure-results
+CMD ["npx", "playwright", "test", "--output=allure-results", "--reporter=line,allure-playwright"]

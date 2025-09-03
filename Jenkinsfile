@@ -29,10 +29,10 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                    -v %CD%/allure-results:/tmp/test-results ^
+                    -v %CD%/allure-results:/app/allure-results ^
                     -w /app ^
                     playwright-docker ^
-                    npx playwright test --output=/tmp/test-results --reporter=line,allure-playwright
+                    npx playwright test --output=allure-results --reporter=line,allure-playwright
                 '''
             }
         }
@@ -40,7 +40,7 @@ pipeline {
 
     post {
         always {
-            // Jenkins Allure plugin generates the report from fresh results
+            // Generate Allure report from latest results
             allure([
                 includeProperties: false,
                 jdk: '',
@@ -49,7 +49,6 @@ pipeline {
         }
     }
 }
-
 
 
 
