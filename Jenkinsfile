@@ -21,7 +21,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t playwright-docker .'
+                bat 'docker build -t playwright-docker-final .'
             }
         }
 
@@ -31,7 +31,7 @@ pipeline {
                 docker run --rm ^
                     -v %CD%/allure-results:/app/allure-results ^
                     -w /app ^
-                    playwright-docker ^
+                    playwright-docker-final ^
                     npx playwright test --output=allure-results --reporter=line,allure-playwright
                 '''
             }
