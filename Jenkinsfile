@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         NODE_ENV = 'ci'
-        DOCKER_VOLUME = 'playwright_workspace' // Docker volume to store workspace
     }
 
     stages {
@@ -18,16 +17,14 @@ pipeline {
         stage('Run Tests in Docker') {
             steps {
                 bat """
-                REM Create Docker volume if it doesn't exist
-                docker volume inspect %DOCKER_VOLUME% >nul 2>&1 || docker volume create %DOCKER_VOLUME%
+                REM Pull the Playwright Docker image
+                docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
 
-                REM Run Playwright tests inside Docker volume
-                docker run --rm -v %DOCKER_VOLUME%:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "
-                    cp -r /workspace/* /home/jenkins/workspace/ &&
-                    npm install &&
-                    npm test &&
-                    npm run allure:generate
-                "
+                REM Create Docker volume if it doesn't exist
+                docker volume inspect playwright_workspace 1>nul 2>&1 || docker volume create playwright_workspace
+
+                REM Run Playwright tests inside Docker
+                docker run --rm -v playwright_workspace:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
                 """
             }
         }
@@ -44,6 +41,7 @@ pipeline {
         }
     }
 }
+
 
 
 
