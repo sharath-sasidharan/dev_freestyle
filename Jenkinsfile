@@ -11,17 +11,17 @@ pipeline {
         }
         stage('Install') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
         stage('Run Tests') {
             steps {
-                sh 'npm test'
+                bat 'npm test'
             }
         }
         stage('Generate Allure Report') {
             steps {
-                sh 'npm run allure:generate'
+                bat 'npm run allure:generate'
             }
         }
     }
