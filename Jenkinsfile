@@ -20,9 +20,10 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                -v %CD%:/app ^
-                -w /app ^
-                playwright-docker
+                    -v %CD%/allure-results:/tmp/test-results ^
+                    -w /app ^
+                    playwright-docker ^
+                    npx playwright test --output=/tmp/test-results --reporter=line,allure-playwright
                 '''
             }
         }
@@ -31,11 +32,12 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                -v %CD%:/app ^
-                -w /app ^
-                playwright-docker ^
-                npx allure generate ./allure-results --clean -o ./allure-report
+                    -v %CD%/allure-results:/tmp/test-results ^
+                    -w /app ^
+                    playwright-docker ^
+                    npx allure generate /tmp/test-results --clean -o /tmp/allure-report
                 '''
+                bat 'xcopy /E /I /Y /Q /H /K /R /C /D /S /tmp/allure-report %CD%\\allure-report'
             }
         }
     }
