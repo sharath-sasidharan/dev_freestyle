@@ -10,6 +10,15 @@ pipeline {
             }
         }
 
+        stage('Clean Allure Results') {
+            steps {
+                bat '''
+                rmdir /S /Q allure-results
+                mkdir allure-results
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 bat 'docker build -t playwright-docker .'
@@ -27,14 +36,11 @@ pipeline {
                 '''
             }
         }
-
-        // REMOVE Allure generation inside Docker
-        // Let Jenkins plugin handle it
     }
 
     post {
         always {
-            // Let Jenkins Allure plugin generate the report using host Allure
+            // Jenkins Allure plugin generates the report from fresh results
             allure([
                 includeProperties: false,
                 jdk: '',
@@ -43,7 +49,6 @@ pipeline {
         }
     }
 }
-
 
 
 
