@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","5889","Google homepage has title","chromium","Wed Sep 03 12:59:16 IST 2025","passed","Wed Sep 03 12:59:22 IST 2025","","example.spec.js","",""
+"","6749","Google homepage has title","webkit","Wed Sep 03 12:57:45 IST 2025","passed","Wed Sep 03 12:57:52 IST 2025","","example.spec.js","",""
+"","4408","Google homepage has title","firefox","Wed Sep 03 12:57:45 IST 2025","passed","Wed Sep 03 12:57:50 IST 2025","","example.spec.js","",""
