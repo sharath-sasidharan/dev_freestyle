@@ -81,11 +81,11 @@ pipeline {
         stage('Run Playwright Tests in Docker') {
             steps {
                 bat '''
-                docker run --rm --user root ^
-                    -v %CD%:/app ^
-                    -w /app ^
+                docker run --rm ^
+                    -v %CD%/allure-results:/app/allure-results ^
+                    -w /tmp/app ^
                     mcr.microsoft.com/playwright:v1.55.0-jammy ^
-                    bash -c "npm install && npx playwright test --output=allure-results --reporter=line,allure-playwright"
+                    bash -c "cp -r /app/* /tmp/app && cd /tmp/app && npm install && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
                 '''
             }
         }
