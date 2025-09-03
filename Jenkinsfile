@@ -1,33 +1,52 @@
 pipeline {
     agent any
+
     tools {
-        nodejs "NodeJS_18"
+        nodejs "NodeJS_18" // Make sure NodeJS_18 is configured in Jenkins Global Tool Configuration
     }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/sharath-sasidharan/dev_freestyle.git', credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
+                git branch: 'master', 
+                    url: 'https://github.com/sharath-sasidharan/dev_freestyle.git', 
+                    credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
             }
         }
-        stage('Install') {
+
+        stage('Install NPM Packages') {
             steps {
                 bat 'npm install'
             }
         }
+
+        stage('Install Playwright Browsers') {
+            steps {
+                bat 'npx playwright install'
+            }
+        }
+
         stage('Run Tests') {
             steps {
                 bat 'npm test'
             }
         }
+
         stage('Generate Allure Report') {
             steps {
                 bat 'npm run allure:generate'
             }
         }
     }
+
     post {
         always {
-            allure([ includeProperties: false, jdk: '', results: [[path: 'allure-results']] ])
+            // Generate Allure report even if tests fail
+            allure([
+                includeProperties: false, 
+                jdk: '', 
+                results: [[path: 'allure-results']]
+            ])
         }
     }
 }
