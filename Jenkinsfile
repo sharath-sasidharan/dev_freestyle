@@ -8,7 +8,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/sharath-sasidharan/dev_freestyle.git'
+               git branch: 'master',
+                   url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
+                   credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
             }
         }
 
@@ -30,9 +32,9 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
+post {
+    always {
+        node {
             allure([
                 includeProperties: false,
                 jdk: '',
@@ -40,4 +42,5 @@ pipeline {
             ])
         }
     }
+}
 }
