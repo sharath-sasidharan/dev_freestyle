@@ -1,12 +1,13 @@
 pipeline {
     agent any
 
-    environment {
-        NODE_ENV = 'ci'
+    tools {
+        nodejs "NodeJS_18"  // Make sure NodeJS is configured in Jenkins Global Tool Configuration
+        git "Default"       // Explicitly use the Git installation we just configured
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
                 git branch: 'master',
                     url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
@@ -20,12 +21,8 @@ pipeline {
                 REM Pull the Playwright Docker image
                 docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
 
-                REM Run tests with workspace mounted directly and fix permissions
-                docker run --rm -u root:root ^
-                    -v "%cd%:/home/jenkins/workspace" ^
-                    -w /home/jenkins/workspace ^
-                    mcr.microsoft.com/playwright:v1.55.0-jammy ^
-                    bash -c "chown -R root:root /home/jenkins/workspace && chmod -R 777 /home/jenkins/workspace && npm install && npx playwright test && npm run allure:generate"
+                REM Run Playwright tests inside Jenkins workspace
+                docker run --rm -u root:root -v %cd%:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
                 """
             }
         }
@@ -33,15 +30,11 @@ pipeline {
 
     post {
         always {
-            // Publish Allure report even if tests fail
-            allure([
-                includeProperties: false,
-                jdk: '',
-                results: [[path: 'allure-results']]
-            ])
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
     }
 }
+
 
 
 
