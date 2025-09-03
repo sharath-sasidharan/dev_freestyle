@@ -39,3 +39,27 @@ test("POST REQUEST", async () => {
   const json = await apiResponse.json();
   console.log(json);
 });
+
+test("Broken Links", async ({ page }) => {
+  await page.goto("https://testautomationpractice.blogspot.com/");
+
+  const anchors = await page.locator("#broken-links a").all();
+  const hrefs = [];
+
+  for (let link of anchors) {
+    const href = await link.getAttribute("href");
+    if (href && href.startsWith("http")) {
+      hrefs.push(href);
+    }
+  }
+
+  for (let url of hrefs) {
+    const response = await page.request.get(url);
+    const status = response.status();
+    if (status >= 400) {
+      console.log(`❌ Broken link: ${url} - Status: ${status}`);
+    } else {
+      console.log(`✅ Valid link: ${url} - Status: ${status}`);
+    }
+  }
+});
