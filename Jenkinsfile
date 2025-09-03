@@ -14,17 +14,18 @@ pipeline {
             }
         }
 
-        stage('Run Tests in Docker') {
+        stage('Run Playwright Tests in Docker') {
             steps {
                 bat """
                 REM Pull the Playwright Docker image
                 docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
 
-                REM Create Docker volume if it doesn't exist
-                docker volume inspect playwright_workspace 1>nul 2>&1 || docker volume create playwright_workspace
-
-                REM Run Playwright tests inside Docker
-                docker run --rm -v playwright_workspace:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
+                REM Run tests with workspace mounted directly and fix permissions
+                docker run --rm -u root:root ^
+                    -v "%cd%:/home/jenkins/workspace" ^
+                    -w /home/jenkins/workspace ^
+                    mcr.microsoft.com/playwright:v1.55.0-jammy ^
+                    bash -c "chown -R root:root /home/jenkins/workspace && chmod -R 777 /home/jenkins/workspace && npm install && npx playwright test && npm run allure:generate"
                 """
             }
         }
