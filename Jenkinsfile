@@ -1,11 +1,5 @@
 pipeline {
-  agent {
-    docker {
-        image 'mcr.microsoft.com/playwright:v1.55.0-jammy'
-        args '-u root:root -v $WORKSPACE:/home/jenkins/workspace'
-    }
-}
-
+    agent any
 
     environment {
         NODE_ENV = 'ci'
@@ -20,29 +14,26 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run Tests in Docker') {
             steps {
-                sh 'npm install'
-            }
-        }
+                sh '''
+                # Pull the Playwright Docker image
+                docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
 
-    
-        stage('Run Tests') {
-            steps {
-                sh 'npm test'
-            }
-        }
-
-        stage('Generate Allure Report') {
-            steps {
-                sh 'npm run allure:generate'
+                # Run container with mounted workspace
+                docker run --rm -u root:root -v $WORKSPACE:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "
+                    npm install &&
+                    npm test &&
+                    npm run allure:generate
+                "
+                '''
             }
         }
     }
 
     post {
         always {
-            // Generate Allure report even if tests fail
+            // Publish Allure report even if tests fail
             allure([
                 includeProperties: false,
                 jdk: '',
@@ -51,6 +42,7 @@ pipeline {
         }
     }
 }
+
 
 
 
