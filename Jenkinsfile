@@ -87,7 +87,7 @@ pipeline {
                     -v %CD%/node_modules_cache:/tmp/app/node_modules ^
                     -w /tmp/app ^
                     mcr.microsoft.com/playwright:v1.55.0-jammy ^
-                    bash -c "cp -r /tmp/source/* /tmp/app && cd /tmp/app && npm install --cache /tmp/app/.npm --prefer-offline && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
+                    bash -c "shopt -s extglob && cp -r /tmp/source/!(node_modules_cache) /tmp/app && cd /tmp/app && npm install --cache /tmp/app/.npm --prefer-offline && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
                 '''
             }
         }
