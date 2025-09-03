@@ -28,22 +28,13 @@ pipeline {
             }
         }
 
-        stage('Generate Allure Report') {
-            steps {
-                bat '''
-                docker run --rm ^
-                    -v %CD%/allure-results:/tmp/test-results ^
-                    -w /app ^
-                    playwright-docker ^
-                    npx allure generate /tmp/test-results --clean -o /tmp/allure-report
-                '''
-                bat 'xcopy /E /I /Y /Q /H /K /R /C /D /S /tmp/allure-report %CD%\\allure-report'
-            }
-        }
+        // REMOVE Allure generation inside Docker
+        // Let Jenkins plugin handle it
     }
 
     post {
         always {
+            // Let Jenkins Allure plugin generate the report using host Allure
             allure([
                 includeProperties: false,
                 jdk: '',
