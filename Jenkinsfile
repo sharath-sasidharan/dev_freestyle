@@ -63,8 +63,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', 
-                    url: 'https://github.com/sharath-sasidharan/dev_freestyle.git', 
+                git branch: 'master',
+                    url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
                     credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
             }
         }
@@ -83,9 +83,11 @@ pipeline {
                 bat '''
                 docker run --rm ^
                     -v %CD%/allure-results:/app/allure-results ^
+                    -v %CD%:/tmp/source:ro ^
+                    -v %CD%/node_modules_cache:/tmp/app/node_modules ^
                     -w /tmp/app ^
                     mcr.microsoft.com/playwright:v1.55.0-jammy ^
-                    bash -c "cp -r /app/* /tmp/app && cd /tmp/app && npm install && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
+                    bash -c "cp -r /tmp/source/* /tmp/app && cd /tmp/app && npm install --cache /tmp/app/.npm --prefer-offline && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
                 '''
             }
         }
