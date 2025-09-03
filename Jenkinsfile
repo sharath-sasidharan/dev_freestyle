@@ -1,39 +1,50 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs "NodeJS_18"  // Make sure NodeJS is configured in Jenkins Global Tool Configuration
-        git "Default"       // Explicitly use the Git installation we just configured
+    environment {
+        NODEJS_HOME = tool name: 'NodeJS_18', type: 'NodeJS'
+        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
-                    credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
+                        credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
+                    ]]
+                ])
             }
         }
 
         stage('Run Playwright Tests in Docker') {
             steps {
                 bat """
-                REM Pull the Playwright Docker image
-                docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
+                REM Create Docker volume if it doesn't exist
+                docker volume inspect playwright_workspace >nul 2>&1 || docker volume create playwright_workspace
 
-                REM Run Playwright tests inside Jenkins workspace
-                docker run --rm -u root:root -v %cd%:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
+                REM Run Playwright tests inside Docker volume
+                docker run --rm -v playwright_workspace:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
                 """
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             }
         }
     }
 
     post {
         always {
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            echo 'Pipeline finished.'
         }
     }
 }
+
 
 
 
