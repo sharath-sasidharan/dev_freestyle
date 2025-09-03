@@ -81,7 +81,7 @@ pipeline {
         stage('Run Playwright Tests in Docker') {
             steps {
                 bat '''
-                docker run --rm ^
+                docker run --rm --user root ^
                     -v %CD%:/app ^
                     -w /app ^
                     mcr.microsoft.com/playwright:v1.55.0-jammy ^
