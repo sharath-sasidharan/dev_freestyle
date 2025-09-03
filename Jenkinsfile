@@ -1,46 +1,52 @@
 pipeline {
     agent any
 
-    environment {
-        NODEJS_HOME = tool name: 'NodeJS_18', type: 'NodeJS'
-        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-    }
-
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM',
-                    branches: [[name: '*/master']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/sharath-sasidharan/dev_freestyle.git',
-                        credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
-                    ]]
-                ])
+                git branch: 'master', 
+                    url: 'https://github.com/sharath-sasidharan/dev_freestyle.git', 
+                    credentialsId: '710ca798-6437-4640-a4a4-d91750b4b425'
             }
         }
 
-        stage('Run Playwright Tests in Docker') {
+        stage('Build Docker Image') {
             steps {
-                bat """
-                REM Create Docker volume if it doesn't exist
-                docker volume inspect playwright_workspace >nul 2>&1 || docker volume create playwright_workspace
+                bat 'docker build -t playwright-docker .'
+            }
+        }
 
-                REM Run Playwright tests inside Docker volume
-                docker run --rm -v playwright_workspace:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
-                """
+        stage('Run Playwright Tests') {
+            steps {
+                bat '''
+                docker run --rm ^
+                -v %CD%:/app ^
+                -w /app ^
+                playwright-docker
+                '''
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                bat '''
+                docker run --rm ^
+                -v %CD%:/app ^
+                -w /app ^
+                playwright-docker ^
+                npx allure generate ./allure-results --clean -o ./allure-report
+                '''
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline finished.'
+            allure([
+                includeProperties: false,
+                jdk: '',
+                results: [[path: 'allure-results']]
+            ])
         }
     }
 }
