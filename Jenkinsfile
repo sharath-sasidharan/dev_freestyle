@@ -82,12 +82,11 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
+                    -v %CD%:/app ^
                     -v %CD%/allure-results:/app/allure-results ^
-                    -v %CD%:/tmp/source:ro ^
-                    -v %CD%/node_modules_cache:/tmp/app/node_modules ^
-                    -w /tmp/app ^
+                    -w /app ^
                     mcr.microsoft.com/playwright:v1.55.0-jammy ^
-                    bash -c "shopt -s extglob && cp -r /tmp/source/!(node_modules_cache) /tmp/app && cd /tmp/app && npm install --cache /tmp/app/.npm --prefer-offline && npx playwright test --output=/app/allure-results --reporter=line,allure-playwright"
+                    bash -c "npm install && npx playwright test --output=allure-results --reporter=line,allure-playwright"
                 '''
             }
         }
@@ -95,7 +94,6 @@ pipeline {
 
     post {
         always {
-            // Generate Allure report in Jenkins
             allure([
                 includeProperties: false,
                 jdk: '',
