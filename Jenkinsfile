@@ -16,17 +16,13 @@ pipeline {
 
         stage('Run Tests in Docker') {
             steps {
-                sh '''
-                # Pull the Playwright Docker image
+                bat """
+                REM Pull the Playwright Docker image
                 docker pull mcr.microsoft.com/playwright:v1.55.0-jammy
 
-                # Run container with mounted workspace
-                docker run --rm -u root:root -v $WORKSPACE:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "
-                    npm install &&
-                    npm test &&
-                    npm run allure:generate
-                "
-                '''
+                REM Run container with mounted workspace
+                docker run --rm -u root:root -v %WORKSPACE%:/home/jenkins/workspace -w /home/jenkins/workspace mcr.microsoft.com/playwright:v1.55.0-jammy bash -c "npm install && npm test && npm run allure:generate"
+                """
             }
         }
     }
